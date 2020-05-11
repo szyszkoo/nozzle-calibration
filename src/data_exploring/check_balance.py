@@ -56,6 +56,7 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
         ERR_RATE = 1
         if np.abs(balance) > ERR_RATE:
             print("Inbalance {} - detected at {} : {}".format(balance, tank_entry_t0_timestamp, tank_entry_t1_timestamp))
+            print("Nozzle IDs and their fuel readings that were used in that time period: {}".format({k:v for (k,v) in nozzles_throughput.items() if v>0}))
 
 
 # This is just a test

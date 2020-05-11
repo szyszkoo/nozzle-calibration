@@ -22,7 +22,7 @@ class Nozzle:
     def countains_transaction_start(self):
         # TODO: check if this works corectly!
         nozzle_status = self.data["status"].tolist()
-        print(nozzle_status)
+        # print(nozzle_status)
         previous_status = nozzle_status[0]
         for status in nozzle_status[1:]:
             if previous_status > status:

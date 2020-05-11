@@ -8,4 +8,4 @@ cleanup:
 format:
 	black . -l 125
 run: 
-	python3 -m data_exploring.check_balance
+	python -m data_exploring.check_balance

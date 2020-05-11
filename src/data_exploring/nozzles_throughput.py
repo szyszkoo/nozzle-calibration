@@ -19,7 +19,7 @@ def get_nozzles_throughput(nozzles: NozzlesData, nozzleIDs: list, t0, t1) -> dic
         single_nozzle = Nozzle(nozzles_subset[nozzles_subset["nozzleID"] == nozzleID])
         nozzle_throughput[nozzleID] = compute_throughput(single_nozzle, t0, t1)
 
-    print("Nozzle throughput {} between {} and {}".format(nozzle_throughput, t0, t1))
+    # print("Nozzle throughput {} between {} and {}".format(nozzle_throughput, t0, t1))
 
     return nozzle_throughput
 
