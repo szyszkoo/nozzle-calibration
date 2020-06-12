@@ -17,7 +17,7 @@ class TankRefuel:
     def _get_pumping_rate_by_index(self, index):
         return self.data.iloc[index]["pumpingRate"]
 
-    def _get_closest_refuel_start(self, timestamp):
+    def _get_closest_refuel_start(self, timestamp, t1):
         """
         get a refueling entry with the closest timestamp to provided
         `timestamp` argument. `timestamp` must be in the future relative to 
@@ -26,6 +26,8 @@ class TankRefuel:
         nearest_index = abs(self.data["timestamp"] - timestamp).idxmin()
 
         if self.data.iloc[nearest_index]["timestamp"] < timestamp:
+            return nearest_index
+        elif (self.data.iloc[nearest_index]["timestamp"] > timestamp) & (self.data.iloc[nearest_index]["timestamp"] < t1):
             return nearest_index
         elif nearest_index > 0:
             # if nearest_index does not refer to the first entry
@@ -56,16 +58,19 @@ class TankRefuel:
         Get the amount of fuel that has been added to a tank in a refueling process 
         between `t0` and `t1`
         """
-
         def calculate_timedelta(a, b):
-            return pd.Timedelta(a - b).seconds / 60
+            timedelta_seconds = pd.Timedelta(a - b).seconds + pd.Timedelta(a - b).microseconds/10**6
+            return timedelta_seconds / 60
 
-        refueling_start_index = self._get_closest_refuel_start(t0)
+        refueling_start_index = self._get_closest_refuel_start(t0, t1)
 
         if refueling_start_index is None:
             return 0
         else:
-            predicted_refueling_end_timestamp = self._get_predicted_refueling_end(refueling_start_index)
+            # offset in refuels - minute
+            offset = pd.to_timedelta(int(60), unit="seconds")
+            predicted_refueling_end_timestamp = self._get_predicted_refueling_end(refueling_start_index) - offset
+            refueling_start_timestamp = self.data.iloc[refueling_start_index]["timestamp"] - offset
             refueling_rate = self._get_pumping_rate_by_index(refueling_start_index)
 
             if predicted_refueling_end_timestamp < t0:
@@ -74,5 +79,9 @@ class TankRefuel:
             elif predicted_refueling_end_timestamp < t1:
                 # refueling will end before t2
                 return calculate_timedelta(predicted_refueling_end_timestamp, t0) * refueling_rate
+            elif (refueling_start_timestamp > t0) & (refueling_start_timestamp < t1):
+                # refueling will start between t0 and t1
+                return calculate_timedelta(t1, refueling_start_timestamp) * refueling_rate
             else:
+                # refueling lasts the whole timedelta
                 return calculate_timedelta(t1, t0) * refueling_rate
