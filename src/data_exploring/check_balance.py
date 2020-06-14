@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from ErroneousTransactionGenerator import ErroneousTransactionGenerator
 from data_abstractions.NozzlesData import NozzlesData
 from data_abstractions.Tanks import Tanks
 from data_abstractions.TankRefuel import TankRefuel
@@ -27,6 +28,10 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
 
     nozzles = NozzlesDataGenerator()
 
+    erroneous_transaction = ErroneousTransactionGenerator(0.0002, 0.95)
+    erroneous_transaction.generate_erroneous_transactions(tankID)
+    nozzles = erroneous_transaction.nozzle
+
     tank_refuel = TankRefuel(tankID)
 
     # tank last element index
@@ -50,7 +55,6 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
         )
 
         tank_refueling_delta = tank_refuel.get_refueling_delta(tank_entry_t0_timestamp, tank_entry_t1_timestamp)
-
         balance = tank_delta - sum(nozzles_throughput.values()) + tank_refueling_delta
 
         ERR_RATE = 1
