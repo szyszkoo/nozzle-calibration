@@ -3,6 +3,8 @@
 import pandas as pd
 
 from data_exploring.TransactionsExtractor import TransactionsExtractor
+from data_abstractions.NozzlesData import NozzlesData
+from utils import MapIds
 
 
 class ErroneousTransactionGenerator:
@@ -10,15 +12,16 @@ class ErroneousTransactionGenerator:
     Generate erroneous transactions for single nozzle
     """
 
-    def __init__(self, nozzle: pd.DataFrame, error_rate: float):
+    def __init__(self, percent_of_erroneus_transactions: float, error_rate: float, NozzlesDataGenerator=NozzlesData):
         """
         `nozzle` :  pandas.DataFrame 
             data from single nozzle
         `error_rate` : float
         """
-        self.nozzle = nozzle
+        self.nozzle = NozzlesDataGenerator()
         self.error_rate = error_rate
-        self.extractor = TransactionsExtractor(nozzle)
+        self.percent_of_erroneus_transactions = percent_of_erroneus_transactions
+        self.extractor = TransactionsExtractor(self.nozzle)
 
     def generate(self) -> pd.DataFrame:
         # # get only rows with uniq values in totalCounter column
@@ -44,3 +47,11 @@ class ErroneousTransactionGenerator:
         ]
         single_transactions_df["erroneousTotalCounter"] = erroneous_total_counter
         return single_transactions_df
+
+
+    def generate_erroneous_transactions(self, tankID: int):
+        selected_nozzles = self.nozzle.data[self.nozzle.data['nozzleID'].isin(MapIds.get_nozzles_from_tank(tankID))]
+        transactions_counter = selected_nozzles.shape[0]
+        random_selected_rows = selected_nozzles.sample(int(self.percent_of_erroneus_transactions*transactions_counter))
+        random_selected_rows["totalCounter"] = random_selected_rows["totalCounter"] * self.error_rate
+        self.nozzle.data.update(random_selected_rows)
