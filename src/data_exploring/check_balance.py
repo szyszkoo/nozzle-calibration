@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from functools import reduce
 
-from ErroneousTransactionGenerator import ErroneousTransactionGenerator
+from data_exploring.ErroneousTransactionGenerator import ErroneousTransactionGenerator
 from data_abstractions.NozzlesData import NozzlesData
 from data_abstractions.Tanks import Tanks
 from data_abstractions.TankRefuel import TankRefuel
@@ -36,10 +37,12 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
 
     # tank last element index
     TANK_LAST_ENTRY_INDEX = tank.index[-1]
+    results = []
 
     for index in range(1, TANK_LAST_ENTRY_INDEX + 1):
         # iterate over tank table - each time take two entires and use their timestamps to create
         # a "time window" used in nozzles analysis
+        
         tank_entry_t0 = tank.iloc[index - 1]
         tank_entry_t1 = tank.iloc[index]
 
@@ -59,9 +62,13 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
 
         ERR_RATE = 1
         if np.abs(balance) > ERR_RATE:
+            results.append(nozzles_throughput)
             print("Inbalance {} - detected at {} : {}".format(balance, tank_entry_t0_timestamp, tank_entry_t1_timestamp))
             print("Nozzle IDs and their fuel readings that were used in that time period: {}".format({k:v for (k,v) in nozzles_throughput.items() if v>0}))
-
+    
+    final_results = reduce(lambda x, y: dict((k, v + y[k]) for k, v in x.items()), results)
+    print()
+    print(f"Nozzle IDs and sum of their potentially incorrect fuel readings: {final_results}")     
 
 # This is just a test
 check_balance(1)
