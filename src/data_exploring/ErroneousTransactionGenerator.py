@@ -49,8 +49,11 @@ class ErroneousTransactionGenerator:
         return single_transactions_df
 
 
-    def generate_erroneous_transactions(self, tankID: int):
-        selected_nozzles = self.nozzle.data[self.nozzle.data['nozzleID'].isin(MapIds.get_nozzles_from_tank(tankID))]
+    def generate_erroneous_transactions(self, tankID: int, nozzle_id):
+        if not nozzle_id in MapIds.get_nozzles_from_tank(tankID):
+            raise ValueError("Provided nozzle_id " + str(nozzle_id) + " is not available in selected tank")
+
+        selected_nozzles = self.nozzle.data[self.nozzle.data['nozzleID'] == nozzle_id]
         transactions_counter = selected_nozzles.shape[0]
         random_selected_rows = selected_nozzles.sample(int(self.percent_of_erroneus_transactions*transactions_counter))
         random_selected_rows["totalCounter"] = random_selected_rows["totalCounter"] * self.error_rate
