@@ -29,7 +29,7 @@ def check_balance(tankID=1, NozzlesDataGenerator=NozzlesData):
     nozzles = NozzlesDataGenerator()
 
     erroneous_transaction = ErroneousTransactionGenerator(0.0002, 0.95)
-    erroneous_transaction.generate_erroneous_transactions(tankID)
+    erroneous_transaction.generate_erroneous_transactions(tankID, 17)
     nozzles = erroneous_transaction.nozzle
 
     tank_refuel = TankRefuel(tankID)
